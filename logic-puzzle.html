@@ -1,0 +1,257 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+  </head>
+  <body>
+    <div class="container">
+      <h1><a href="https://en.wikipedia.org/wiki/Logic_puzzle">Logic Puzzle</a></h1>
+      <p class="lead">
+	This is an example of using <a href="https://en.wikipedia.org/wiki/Logic_programming">logic programming</a> to solve
+	a <a href="https://en.wikipedia.org/wiki/Logic_puzzle">logic puzzle</a>
+	<br>
+	The problem from <a href="https://www.brainzilla.com/logic/logic-grid/musical-instruments/">here</a> describes these facts:
+	<ul>
+	  <li>Ariella is learning about the accordian</li>
+	  <li>The kid learning the xylophone is 2 years younger than Valeria</li>
+	  <li>Kallie is either 6 or 8 years old</li>
+	  <li>The 7 year old is learning the oboe</li>
+	  <li>The kids names are: Ariella, Kallie, Stella, Valeria</li>
+	  <li>Each kid has a different age between 6 and 9</li>
+	  <li>Each Kid plays a different instrument from: accordian, xylophone, oboe, ukelele</li>
+	</ul>	
+	The puzzle is to find out which kid plays which instrument and what age they are using logical deductions.
+	<br>
+	<br>
+	The following code is using <a href="https://github.com/mcsoto/LogicJS">LogicJs</a> which is an implementation of
+	<a href="http://minikanren.org/">miniKanren</a> written in JavaScript. By coding the logical constraints then asking the framework to look for possible solutions for the unknown values we are using logic programming to solve this puzzle.
+	<br>
+	<br>
+	In this case I have added my own constraints while coding the original facts based on my own logical deductions. It's possible to use logic programming to have the computer help derive these additional implied constraints also, but that is more advanced programming. The additional constraints added are:
+	<ul>
+	  <li>The unknown xylophone player can't be 7 because the oboe player is 7</li>
+	  <li>The unknown xylophone player can't be Valeria because they are younger</li>
+	  <li>In order to be two years younger than anyone the unknown player must be 6 or 7, but can't be 7 so unknown player must be 6</li>
+	  <li>Because Valeria is 2 years older than the xylophone player, she must be 8</li>
+	  <li>The unknown xylophone player can't be Ariella because she plays accordian, so the unknown player must be Kallie or Stella</li>
+	  <li>Kallie is 6 or 8, but Valeria is 8 so must be 6</li>
+	  <li>Kallie must play either ukelele or xylophone, since oboe player is 7 and accordian player is Ariella</li>
+	  <li>Valeria does not play accordian, or xylophone and 7 year old is oboe player, Valeria is 8 so must play ukelele</li>
+	  <li>Ariella's age cannot be 7 since that is the oboe player</li>
+	</ul>
+	In the implementation I have coded the distinct constraint using the fundamental logic operators and, or and equal. You can read the <a href="http://mitpress.mit.edu/books/reasoned-schemer">The Reasoned Schemer</a> to understand these principles.
+	<br>
+	<br>
+	Scroll to the button at the bottom of the page to evaluate the code and see the results.
+
+      </p>
+
+      <textarea class="form-control" id="code" rows="100">
+var or = logic.or, and = logic.and, eq = logic.eq,
+    run = logic.run, lvar = logic.lvar, between = logic.between
+
+/* Names are from: Ariella, Kallie, Stella, Valeria */
+function name(name){
+    return or(
+	eq(name, 'Ariella'), eq(name, 'Kallie'),
+	eq(name, 'Stella'), eq(name, 'Valeria')
+    )
+}
+
+/* Instruments are from: accordian, oboe, ukele, xylophone */
+function instrument(instrument){
+    return or(
+	eq(instrument, 'accordian'), eq(instrument, 'oboe'),
+	eq(instrument, 'ukelele'), eq(instrument, 'xylophone')
+    )
+}
+
+/* Ages are unique between 6 and 9 */
+function age(age){ return between(6, 9, age) }
+
+/* A kid must have a valid name, instrument and age */
+function kid(n, i, a){ return and(name(n), instrument(i), age(a)) }
+
+/* Test two ages are distinct */
+function notEqAge(x, y){
+    return or(
+	and(eq(x,6), or(eq(y, 7), eq(y, 8), eq(y, 9))),
+	and(eq(x,7), or(eq(y, 6), eq(y, 8), eq(y, 9))),
+	and(eq(x,8), or(eq(y, 6), eq(y, 7), eq(y, 9))),
+	and(eq(x,9), or(eq(y, 6), eq(y, 7), eq(y, 8))))
+}
+
+/* Test three ages are distinct */
+function distinctAge(a, b, c, d){
+    return and(
+	notEqAge(a, b), notEqAge(a, c), notEqAge(b, c)
+    )
+}
+
+/* Test two names are distinct */
+function notEqName(x, y){
+    return or(
+	and(eq(x,'Ariella'), or(eq(y, 'Kallie'), eq(y, 'Stella'), eq(y, 'Valeria'))),
+	and(eq(x,'Kallie'), or(eq(y, 'Ariella'), eq(y, 'Stella'), eq(y, 'Valeria'))),
+	and(eq(x,'Stella'), or(eq(y, 'Ariella'), eq(y, 'Kallie'), eq(y, 'Valeria'))),
+	and(eq(x,'Valeria'), or(eq(y, 'Ariella'), eq(y, 'Kallie'), eq(y, 'Stella'))))
+}
+
+/* Test three names are distinct */
+function distinctName(a, b, c){
+    return and(
+	notEqName(a, b), notEqName(a, c), notEqName(b, c)
+    )
+}
+
+/* Test two instruments are distinct */
+function notEqInstrument(x, y){
+    return or(
+	and(eq(x,'accordian'), or(eq(y, 'oboe'), eq(y, 'ukelele'), eq(y, 'xylophone'))),
+	and(eq(x,'oboe'), or(eq(y, 'accordian'), eq(y, 'ukelele'), eq(y, 'xylophone'))),
+	and(eq(x,'ukelele'), or(eq(y, 'accordian'), eq(y, 'oboe'), eq(y, 'xylophone'))),
+	and(eq(x,'xylophone'), or(eq(y, 'accordian'), eq(y, 'oboe'), eq(y, 'ukelele'))))
+}
+
+/* Test three instruments are distinct */
+function distinctInstrument(a, b, c){
+    return and(
+	notEqInstrument(a, b),
+	notEqInstrument(a, c),
+	notEqInstrument(b, c)
+    )
+}
+
+/*
+  Starting Facts are:
+
+  1. Ariella is learning accordian
+  2. ?unknown? is learning xylophone but is 2 years younger than Valeria
+  3. Kallie is either 6 or 8 years old
+  4. 7 year old ?unknown? is learning the oboe
+*/
+function solve(aKid, aIns, aAge,
+	       mysteryKid, mysteryIns, mysteryAge,
+	       kKid, kIns, kAge,
+	       vKid, vIns, dAge) {
+    return and(
+	/* Verify the values are in the domain */
+	kid(aKid, aIns, aAge),
+	kid(mysteryKid, mysteryIns, mysteryAge),
+	kid(kKid, kIns, kAge),
+	kid(vKid, vIns, dAge),
+
+	/* mysteryKid is younger than Valeria and does not play accordian so is not Ariella
+	   mysteryKid can't be 7 because the 7 year old plays the oboe
+	   mysteryKid has to be two years younger than Valeria so must be 6 and Valeria must be 8 
+	   because mysteryKids age cannot be 8 or 9 since highest age is 9 */
+	and(eq(mysteryAge, 6), eq(dAge, 8)),
+
+	/* mysteryKid learns xylophone so can't be Ariella and is younger than Valeria */
+	or(eq(mysteryKid, 'Kallie'), eq(mysteryKid, 'Stella')),
+
+	/* kKid Kallie is 6 or 8 and the 7 year old learns oboe,
+	   Ariella learns accordian and Valeria is 8 so Kallie must be 6 */
+	eq(kAge, 6),
+
+	/* kKid Kallie isn't Ariella so doesn't play accordian, 7 year old play oboe 
+	   so must play either ukelele or xylophone */
+	or(eq(kIns, 'ukelele'), eq(kIns, 'xylophone')),
+
+	/* vKid Valeria does not play accordian or xylophone and 7yo plays the oboe
+	   Valeria can't be 7 because she is 2 yrs older than xylophone player
+	   Only ukelele is left	*/
+	eq(vIns, 'ukelele'),
+
+	/* mysteryKid plays xylophone so isn't Ariella
+	   mysteryKid is younger than Valeria, so can't be Valeria. */
+	notEqName('Ariella', mysteryKid),
+	notEqName('Valeria', mysteryKid),
+
+	/* Ariella's age can't be 7 because that is the oboe player */
+	notEqAge(aAge, 7),
+
+	/* mysteryKid's name could be kKid (Kallie), if so instrument and age must match Kallie
+	   otherwise instrument and age must be different from Kallie */
+	or(
+	    and(eq(mysteryKid, kKid), eq(mysteryIns, kIns), eq(mysteryAge, kAge)),
+	    and(notEqName(mysteryKid, kKid),
+		notEqInstrument(mysteryIns, kIns),
+		notEqAge(mysteryAge, kAge))
+	),
+
+	/* mysteryKid could be kKid, but we know the other attributes must be distinct from each other */
+	distinctAge(aAge, kAge, dAge),
+	distinctName(aKid, kKid, vKid),
+	distinctInstrument(aIns, kIns, vIns)
+    )
+}
+
+/*
+   These are the variables we don't know the values of:
+
+   1. mysteryKid's name
+   2. Ariella's age
+   3. mysteryKid's age
+   4. Kallie's age
+   5. Valeria's age
+   6. Kallie's instrument
+   7. Valeria's instrument
+*/
+var mysteryKid = lvar()
+var aAge = lvar(), mysteryAge = lvar(), kAge = lvar(), vAge = lvar()
+var kIns = lvar(), vIns = lvar()
+
+/* Solve the problem by finding if their is a solution for the unknown variables 
+   within the given the constraints */
+function runSolve(){
+    return run(
+	solve('Ariella', 'accordian', aAge,
+	      mysteryKid, 'xylophone', mysteryAge,
+	      'Kallie', kIns, kAge,
+	      'Valeria', vIns, vAge),
+	[aAge, mysteryKid, mysteryAge, kIns, kAge, vIns, vAge]
+    )
+}
+
+/* If mysteryKid is not Stella then we can just derive what her values must be from what options are left. */
+function show(solutions){
+
+    var formatted = []
+    for(var i=0; i < solutions.length; i++){
+	var sol = solutions[i]
+	var aAge = sol[0],
+	    mysteryKid = sol[1], mysteryAge = sol[2],
+	    kIns = sol[3], kAge = sol[4],
+	    vIns = sol[5], vAge = sol[6]
+
+	    var str = 'aKid: [Ariella, accordian, ' + aAge + ']\n'
+	    str += 'mysteryKid: [' + mysteryKid + ', xylophone, ' + mysteryAge + ']\n'
+	    str += 'cKid: [Kallie,' + kIns + ', ' + kAge + ']\n'
+            str += 'dKid: [Valeria,' + vIns + ', ' + vAge + ']\n'
+
+            formatted.push(str)
+     }
+     return formatted
+}
+
+console.log(show(runSolve()))
+		     </textarea>
+      <br>
+      <button type="button" class="btn btn-primary">Evaluate</button>
+    </div>
+  </body>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="./js/logicjs.js"></script>
+  <script>
+    function evaluate(){
+        var code = $('#code').val()
+        eval(code)
+        alert(show(runSolve()))
+    }
+    $(function(){
+        $(document).on("click", "button", evaluate)
+    })
+  </script>
+
+</html>

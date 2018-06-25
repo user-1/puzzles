@@ -1,0 +1,74 @@
+
+<html>
+  <head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/common.css" />
+    <style type="text/css" media="screen">
+
+.help ul { list-style: none; }
+
+.intro {
+    width: 600px;
+    margin: 0 auto;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+.black {
+    background-color: #000000;
+}
+
+.black:focus {
+    background-color: #ababab;
+}
+
+sup {
+  position: relative;
+  top: -6;
+  left: -6;
+}
+
+#superscript-mode {
+  width : 200px;
+}
+
+#puzzle-grid {
+  margin-bottom: 10px;
+}
+
+#results {
+    max-width: 250px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+input {
+  font-size: 48px; 
+  min-width: 8em;
+  text-transform:uppercase;
+}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Word Search</h1>
+      <p class="lead">
+	A word search that that can help solve crosswords. Type the known letters in and use ? for the blanks. The search will look for words in the word list that match that criteria. Note that often there are obscure words in crosswords that are not in this word list.	
+      </p>
+      <div> 
+        <input id="word-search" name="word-search" type="text"/>
+        <div><i>Use ? for unknown letters. Enter/Return to search</i></div>
+        <!--div><i>Use * to search many unknown letters (a glob). e.g. MO* => MOAT, ... </i></div-->        
+        <div><i><b>Advanced:</b> Use numbers 1-9 as references for unknown letters that must be the same e.g.  RU11?? => RUSSIA, RUNNER, RUGGED... </i></div>        
+      </div>
+      <div id="results"></div>
+    </div>
+  </body>
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <!-- script src="js/jquery-3.1.1.min.js"></script -->
+  <script src="js/common-ui.js"></script>    
+  <script src="js/word-search.js"></script>
+  <script src="js/crossword-helpers.js"></script>
+
+</html>
